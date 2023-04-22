@@ -14,11 +14,16 @@ public class PlayerComponent : MonoBehaviour
     Vector3 joystickInput;
     float currentMoveSpeed;
     public bool isShooting;
+
+    Animator animator;
+
+
     private void Awake()
     {
         playerCollider = GetComponent<CapsuleCollider2D>();
         rb = GetComponent<Rigidbody2D>();
         lr = GetComponent<LineRenderer>();
+        animator = GetComponent<Animator>();
         
     }
     private void Update()
@@ -28,8 +33,16 @@ public class PlayerComponent : MonoBehaviour
         {
             Quaternion temp = new Quaternion(0f, 0f, Quaternion.LookRotation(joystickInput, Vector3.up).y, -Quaternion.LookRotation(joystickInput, Vector3.up).w);
             transform.rotation = temp;
+            animator.SetBool("isMoving", true);
             transform.position += transform.up * currentMoveSpeed * Time.deltaTime;
         }
+        else 
+        {
+            animator.SetBool("isMoving", false);
+            transform.rotation = Quaternion.identity;
+        }
+        
+
         if (isShooting)
         {
             ShootingMode();
