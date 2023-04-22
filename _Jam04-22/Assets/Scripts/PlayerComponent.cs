@@ -11,17 +11,25 @@ public class PlayerComponent : MonoBehaviour
     CapsuleCollider2D playerCollider;
     LineRenderer lr;
     Rigidbody2D rb;
-    Vector2 joystickInput;
-    bool isShooting;
+    Vector3 joystickInput;
+    float currentMoveSpeed;
+    public bool isShooting;
     private void Awake()
     {
         playerCollider = GetComponent<CapsuleCollider2D>();
         rb = GetComponent<Rigidbody2D>();
         lr = GetComponent<LineRenderer>();
+        
     }
     private void Update()
     {
-        transform.Translate(joystickInput * Time.deltaTime * moveSpeed);
+        currentMoveSpeed = moveSpeed;
+        if (joystickInput != Vector3.zero)
+        {
+            Quaternion temp = new Quaternion(0f, 0f, Quaternion.LookRotation(joystickInput, Vector3.up).y, -Quaternion.LookRotation(joystickInput, Vector3.up).w);
+            transform.rotation = temp;
+            transform.position += transform.up * currentMoveSpeed * Time.deltaTime;
+        }
         if (isShooting)
         {
             ShootingMode();
@@ -29,17 +37,20 @@ public class PlayerComponent : MonoBehaviour
     }
     void ShootingMode()
     {
-        rb.constraints = RigidbodyConstraints2D.FreezePosition;
+        moveSpeed = 0;
         foreach (GameObject ast in asteroidContainer)
         {
             ast.GetComponent<AsteroidComponent>().SwitchSpeed("slow");
         }
         lr.SetPosition(0, transform.position);
-        lr.SetPosition(1, ((Vector2)transform.position + joystickInput) * aimDisplayLength);
+        lr.SetPosition(1, (transform.position + joystickInput) * aimDisplayLength);
     }
-    public void AimMove(InputAction.CallbackContext move)
+    public void AimMove(InputAction.CallbackContext context)
     {
-        joystickInput = move.ReadValue<Vector2>();
+        Vector2 temp = context.ReadValue<Vector2>();
+        if (temp != Vector2.zero)
+            joystickInput = new Vector3(temp.x, 0, temp.y);
+        else joystickInput = Vector3.zero;
     }
     
     private void OnCollisionEnter2D(Collision2D asteroid)
