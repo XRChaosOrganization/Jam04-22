@@ -7,8 +7,11 @@ public class AsteroidComponent : MonoBehaviour
     public float normalmoveSpeed;
     public float slowMoveSpeed;
     public float currentMoveSpeed;
+    public Rigidbody2D rb;
+    public bool isLaunched;
     private void Start()
     {
+        rb = GetComponent<Rigidbody2D>();
         currentMoveSpeed = normalmoveSpeed;
     }
     private void Update()
@@ -27,4 +30,13 @@ public class AsteroidComponent : MonoBehaviour
             currentMoveSpeed = normalmoveSpeed;
         }
     }
+    private void OnCollisionEnter2D(Collision2D col)
+    {
+        if (isLaunched && col.collider.CompareTag("Asteroid"))
+        {
+            Destroy(this.gameObject, 3f);
+            Destroy(col.gameObject, 3f);
+        }
+    }
+    
 }
